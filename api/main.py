@@ -1,67 +1,20 @@
-from fastapi import (
-    FastAPI,
-    UploadFile,
-    File,
-    HTTPException,
-    Form,
-    Request,
-    status,
-    Depends,
-    Header,
-    Response,
-    Cookie,
-)
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional, Dict, Any
-from pydantic_models import (
-    QueryInput,
-    QueryResponse,
-    DocumentInfo,
-    DeleteFileRequest,
-    UserCreate,
-    UserLogin,
-    UserResponse,
-    LoginResponse,
-    UserDelete,
-    UserModify,
-    UserRole,
-)
-from faiss_utils import (
-    index_document_to_faiss,
-    delete_doc_from_faiss,
-    clean_faiss_db_except_current,
-)
-from langchain_utils import get_rag_chain
-from db_utils import (
-    get_chat_history,
-    insert_application_logs,
-    insert_document_record,
-    delete_document_record,
-    get_all_documents,
-    authenticate_user,
-    create_user,
-    get_user_by_id,
-    delete_user,
-    modify_username,
-    get_all_users,
-)
-from logger import api_logger, error_logger, PerformanceTimer
-import uuid
-import shutil
-import os
-import traceback
+from typing import Optional, Dict, Any, List
+from pydantic import BaseModel
+import ollama
+import yfinance as yf
 import time
-import sqlite3
-from datetime import datetime, timedelta
+import uuid
+import logging
 
-# Create a directory for storing uploaded files
-UPLOAD_DIR = "./uploaded_files"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Basic RAG Chatbot",
-    description="A simple Retrieval Augmented Generation chatbot system",
+    title="Ollama Finance Chat",
+    description="A simple Ollama-based finance chatbot with automatic stock data fetching",
     version="1.0.0",
 )
 
@@ -71,1041 +24,441 @@ app.add_middleware(
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=[
-        "Content-Type",
-        "Authorization",
-        "Accept",
-        "X-Requested-With",
-        "Origin",
-    ],
+    allow_headers=["*"],
 )
 
-# Global exception handler
+
+# Pydantic models
+class ChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
 
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    error_id = str(uuid.uuid4())
-    error_logger.error(f"Unhandled exception ID {error_id}: {str(exc)}", exc_info=True)
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": "An unexpected error occurred",
-            "error_id": error_id,
-            "detail": str(exc),
-        },
-    )
+class ChatResponse(BaseModel):
+    response: str
+    processing_time: float
+    session_id: str
+    stock_data: Optional[List[Dict[str, Any]]] = None
 
 
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    request_id = str(uuid.uuid4())
-    start_time = time.time()
-
-    # Log request details
-    api_logger.info(
-        f"Request {request_id} started: {request.method} {request.url.path}"
-    )
-
-    try:
-        response = await call_next(request)
-
-        # Log response details
-        process_time = time.time() - start_time
-        api_logger.info(
-            f"Request {request_id} completed: Status {response.status_code} in {process_time:.2f}s"
-        )
-
-        return response
-    except Exception as e:
-        # Log exception details
-        process_time = time.time() - start_time
-        error_logger.error(
-            f"Request {request_id} failed after {process_time:.2f}s: {str(e)}",
-            exc_info=True,
-        )
-        raise
+# Ollama configuration
+FINANCE_MODEL = "jjansen/adapt-finance-llama2-7b:latest"  # Main finance model
 
 
-# Auth endpoints
-
-
-@app.post("/login")
-async def login(user_data: UserLogin):
-    user = authenticate_user(user_data.username, user_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-        )
-
-    return {"user_id": user["id"], "username": user["username"], "role": user["role"]}
-
-
-@app.post("/logout")
-async def logout():
-    return {"message": "Logged out successfully"}
-
-
-# Admin user management endpoints
-
-
-@app.get("/admin/list-users")
-async def list_users():
-    """Get a list of all users in the system."""
-    try:
-        users = get_all_users()
-        return users
-    except Exception as e:
-        error_id = str(uuid.uuid4())
-        error_msg = f"Error listing users: {str(e)}"
-        api_logger.error(f"{error_msg} (ID: {error_id})")
-        error_logger.error(f"Error ID {error_id}: {error_msg}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_msg
-        )
-
-
-@app.post("/admin/create-user")
-async def create_new_user(user_data: UserCreate):
-    user_id, error = create_user(user_data.username, user_data.password, user_data.role)
-    if error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-
-    user = get_user_by_id(user_id)
-    return {"id": user["id"], "username": user["username"], "role": user["role"]}
-
-
-@app.post("/admin/modify-user")
-async def modify_user_endpoint(user_data: UserModify):
-    success, error = modify_username(user_data.user_id, user_data.new_username)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-
-    user = get_user_by_id(user_data.user_id)
-    return {"id": user["id"], "username": user["username"], "role": user["role"]}
-
-
-@app.post("/admin/delete-user")
-async def remove_user(user_data: UserDelete):
-    success, error = delete_user(user_data.user_id)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-
-    return {"message": f"User {user_data.user_id} deleted successfully"}
-
-
-# Admin chat function handler
-
-
-@app.post("/admin/chat-function")
-async def admin_chat_function(
-    data: Dict[str, Any],
-):
-    try:
-        command = data.get("command", "").lower()
-        params = data.get("params", {})
-
-        if command == "create-user":
-            username = params.get("username")
-            password = params.get("password")
-            role = params.get("role", "user")
-
-            if not username or not password:
-                return {
-                    "status": "error",
-                    "message": "Username and password are required",
-                }
-
-            user_id, error = create_user(username, password, role)
-            if error:
-                return {"status": "error", "message": error}
-
-            return {
-                "status": "success",
-                "message": f"User '{username}' created successfully with ID {user_id}",
-            }
-
-        elif command == "delete-user":
-            user_id = params.get("user_id")
-            if not user_id:
-                return {"status": "error", "message": "User ID is required"}
-
-            success, error = delete_user(user_id)
-            if not success:
-                return {"status": "error", "message": error}
-
-            return {
-                "status": "success",
-                "message": f"User with ID {user_id} deleted successfully",
-            }
-
-        elif command == "modify-user":
-            user_id = params.get("user_id")
-            new_username = params.get("new_username")
-
-            if not user_id or not new_username:
-                return {
-                    "status": "error",
-                    "message": "User ID and new username are required",
-                }
-
-            success, error = modify_username(user_id, new_username)
-            if not success:
-                return {"status": "error", "message": error}
-
-            return {
-                "status": "success",
-                "message": f"Username for user {user_id} changed to '{new_username}'",
-            }
-
-        else:
-            return {"status": "error", "message": f"Unknown command: {command}"}
-
-    except Exception as e:
-        error_id = str(uuid.uuid4())
-        error_msg = f"Error processing admin function: {str(e)}"
-        api_logger.error(f"{error_msg} (ID: {error_id})")
-        error_logger.error(f"Error ID {error_id}: {error_msg}", exc_info=True)
-
-        return {
-            "status": "error",
-            "message": f"An error occurred: {str(e)}",
-            "error_id": error_id,
-        }
-
-
-@app.post("/upload-doc")
-async def upload_file(file: UploadFile = File(...)):
-    with PerformanceTimer(api_logger, f"upload_file:{file.filename}"):
-        try:
-            # Save temporary file for indexing
-            temp_path = f"temp_{file.filename}"
-            with open(temp_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-
-            api_logger.info(f"Temporary file saved: {temp_path}")
-
-            # Index document
-            file_id = insert_document_record(file.filename)
-            api_logger.info(f"Document record inserted with ID: {file_id}")
-
-            # Save the file to the permanent storage location
-            permanent_path = os.path.join(UPLOAD_DIR, f"doc-{file_id}-{file.filename}")
-            shutil.copy(temp_path, permanent_path)
-            api_logger.info(f"File saved to permanent storage: {permanent_path}")
-
-            if index_document_to_faiss(temp_path, file_id):
-                api_logger.info(
-                    f"Document indexed successfully: {file.filename} (ID: {file_id})"
-                )
-
-                # Clean up FAISS DB to only keep the current document
-                clean_faiss_db_except_current(file_id, clean_db=True)
-                api_logger.info(
-                    f"FAISS DB and database cleaned, only document ID {file_id} remains"
-                )
-
-                # Clean up temporary file
-                os.remove(temp_path)
-                api_logger.info(f"Temporary file removed: {temp_path}")
-
-                # Clean up old files in the upload directory (keep only the current one)
-                cleanup_uploaded_files(file_id)
-
-                return {"message": "Document indexed successfully", "file_id": file_id}
-            else:
-                # Clean up if indexing failed
-                os.remove(temp_path)
-                os.remove(permanent_path)
-                api_logger.error(f"Failed to index document: {file.filename}")
-                return JSONResponse(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    content={"message": "Failed to index document"},
-                )
-        except Exception as e:
-            error_id = str(uuid.uuid4())
-            error_msg = f"Error uploading file: {str(e)}"
-            api_logger.error(f"{error_msg} (ID: {error_id})")
-            error_logger.error(f"Error ID {error_id}: {error_msg}", exc_info=True)
-
-            # Clean up temporary file if it exists
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-
-            return JSONResponse(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content={"message": error_msg, "error_id": error_id},
-            )
-
-
-def cleanup_uploaded_files(current_file_id: int):
-    """Remove all uploaded files except the current one."""
-    try:
-        for filename in os.listdir(UPLOAD_DIR):
-            # Skip the current file
-            if filename.startswith(f"doc-{current_file_id}-"):
-                continue
-
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-                api_logger.info(f"Removed old uploaded file: {file_path}")
-    except Exception as e:
-        error_logger.error(f"Error cleaning up uploaded files: {str(e)}", exc_info=True)
-
-
-@app.post("/chat")
-async def chat_endpoint(query: QueryInput) -> QueryResponse:
+# Stock data functions
+def get_stock_price(symbol: str) -> float:
     """
-    Process a chat query using RAG.
+    Get the current stock price for a given symbol
 
     Args:
-        query: The query input containing the question and chat history.
+        symbol: The stock symbol (e.g., AAPL, GOOGL, TSLA)
 
     Returns:
-        A response containing the answer and updated chat history.
+        float: The current stock price
     """
     try:
-        with PerformanceTimer(api_logger, f"chat_endpoint:{query.question[:30]}"):
-            api_logger.info(f"Received chat query: {query.question[:100]}...")
+        ticker = yf.Ticker(symbol.upper())
 
-            # Get chat history from database if session_id is provided
-            chat_history = []
-            if query.session_id:
-                api_logger.info(f"Getting chat history for session: {query.session_id}")
-                chat_history = get_chat_history(query.session_id)
-                api_logger.info(f"Retrieved {len(chat_history)} chat history items")
+        # Try to get price from info first
+        info = ticker.info
+        if info and "regularMarketPrice" in info and info["regularMarketPrice"]:
+            return float(info["regularMarketPrice"])
+        elif info and "currentPrice" in info and info["currentPrice"]:
+            return float(info["currentPrice"])
 
-            # Convert chat history to the format expected by LangChain
-            formatted_history = []
-            for item in chat_history:
-                formatted_history.append(("human", item["question"]))
-                formatted_history.append(("ai", item["answer"]))
+        # Fallback to fast_info
+        fast_info = ticker.fast_info
+        if hasattr(fast_info, "last_price") and fast_info.last_price:
+            return float(fast_info.last_price)
 
-            # Get RAG chain with specified model and hybrid search option
-            use_hybrid_search = (
-                query.use_hybrid_search if hasattr(query, "use_hybrid_search") else True
-            )
-            chain = get_rag_chain(
-                model=query.model, use_hybrid_search=use_hybrid_search
-            )
+        # Final fallback to history
+        hist = ticker.history(period="1d", interval="1m")
+        if not hist.empty:
+            return float(hist["Close"].iloc[-1])
 
-            # Process query
-            api_logger.info(f"Processing query with model: {query.model}")
-            start_time = time.time()
-            response = chain.invoke(
-                {"input": query.question, "chat_history": formatted_history}
-            )
-            end_time = time.time()
-            processing_time = end_time - start_time
-            api_logger.info(f"Query processed in {processing_time:.2f} seconds")
-
-            # Extract answer
-            answer = response["answer"]
-            api_logger.info(f"Generated answer: {answer[:100]}...")
-
-            # Log to database if session_id is provided
-            if query.session_id:
-                api_logger.info(
-                    f"Logging chat to database for session: {query.session_id}"
-                )
-                insert_application_logs(
-                    session_id=query.session_id,
-                    question=query.question,
-                    answer=answer,
-                    model=query.model,
-                    processing_time=processing_time,
-                )
-
-            # Return response
-            return QueryResponse(
-                answer=answer, processing_time=processing_time, model=query.model
-            )
+        raise ValueError(f"No price data found for {symbol}")
 
     except Exception as e:
-        error_msg = f"Error processing chat query: {str(e)}"
-        api_logger.error(error_msg)
-        error_logger.error(error_msg, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+        logger.error(f"Error fetching stock price for {symbol}: {str(e)}")
+        raise Exception(f"Could not fetch stock price for {symbol}: {str(e)}")
 
 
-@app.get("/documents", response_model=List[DocumentInfo])
-async def list_documents():
-    with PerformanceTimer(api_logger, "list_documents"):
-        try:
-            documents = get_all_documents()
-            api_logger.info(f"Retrieved {len(documents)} documents")
-            return documents
-        except Exception as e:
-            error_msg = f"Error retrieving documents: {str(e)}"
-            api_logger.error(error_msg)
-            error_logger.error(error_msg, exc_info=True)
-            raise HTTPException(status_code=500, detail=error_msg)
+def get_stock_info(symbol: str) -> Dict[str, Any]:
+    """
+    Get comprehensive stock information for a given symbol
 
+    Args:
+        symbol: The stock symbol (e.g., AAPL, GOOGL, TSLA)
 
-@app.post("/delete-doc")
-async def delete_document(req: DeleteFileRequest):
-    with PerformanceTimer(api_logger, f"delete_document:{req.file_id}"):
-        try:
-            # Delete from FAISS
-            if delete_doc_from_faiss(req.file_id):
-                api_logger.info(f"Document deleted from FAISS: ID {req.file_id}")
-
-                # Delete from database
-                if delete_document_record(req.file_id):
-                    api_logger.info(f"Document record deleted: ID {req.file_id}")
-
-                    # Delete the file from storage
-                    try:
-                        for filename in os.listdir(UPLOAD_DIR):
-                            if filename.startswith(f"doc-{req.file_id}-"):
-                                file_path = os.path.join(UPLOAD_DIR, filename)
-                                os.remove(file_path)
-                                api_logger.info(f"Document file deleted: {file_path}")
-                    except Exception as e:
-                        error_msg = f"Error deleting document file: {str(e)}"
-                        api_logger.error(error_msg)
-                        error_logger.error(error_msg, exc_info=True)
-                        # Continue anyway, the important parts (FAISS and DB) are cleaned
-
-                    return {"message": f"Document {req.file_id} deleted successfully"}
-                else:
-                    error_msg = f"Failed to delete document record from database: ID {req.file_id}"
-                    api_logger.error(error_msg)
-                    return JSONResponse(
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        content={"message": error_msg},
-                    )
-            else:
-                error_msg = f"Failed to delete document from FAISS: ID {req.file_id}"
-                api_logger.error(error_msg)
-                return JSONResponse(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    content={"message": error_msg},
-                )
-        except Exception as e:
-            error_id = str(uuid.uuid4())
-            error_msg = f"Error deleting document: {str(e)}"
-            api_logger.error(f"{error_msg} (ID: {error_id})")
-            error_logger.error(f"Error ID {error_id}: {error_msg}", exc_info=True)
-            return JSONResponse(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content={"message": error_msg, "error_id": error_id},
-            )
-
-
-# LLM Tool Calling API endpoint
-# FinGPT Advanced Mode - LLM Tool Calling API endpoint
-# This endpoint provides advanced functionality for user account management
-# and database operations through natural language processing.
-
-
-@app.post("/llm-tool-call")
-async def llm_tool_call(
-    data: Dict[str, Any],
-):
+    Returns:
+        dict: Comprehensive stock information
+    """
     try:
-        user_query = data.get("user_query", "")
-        conversation_history = data.get("conversation_history", [])
-        # Default to regular user if not specified
-        user_role = data.get("user_role", "user")
+        ticker = yf.Ticker(symbol.upper())
+        info = ticker.info
 
-        # Function definitions that the LLM will be able to call - format compatible with Gemini API
-        function_defs = [
-            {
-                "function_declarations": [
-                    {
-                        "name": "create_user",
-                        "description": "Create a new user in the system",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "username": {
-                                    "type": "STRING",
-                                    "description": "The username for the new user",
-                                },
-                                "password": {
-                                    "type": "STRING",
-                                    "description": "The password for the new user",
-                                },
-                                "role": {
-                                    "type": "STRING",
-                                    "description": "The role for the new user (default: user)",
-                                    "enum": ["user", "admin"],
-                                },
-                            },
-                            "required": ["username", "password"],
-                        },
-                    }
-                ]
-            },
-            {
-                "function_declarations": [
-                    {
-                        "name": "delete_user",
-                        "description": "Delete an existing user from the system",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "user_id": {
-                                    "type": "INTEGER",
-                                    "description": "The ID of the user to delete",
-                                }
-                            },
-                            "required": ["user_id"],
-                        },
-                    }
-                ]
-            },
-            {
-                "function_declarations": [
-                    {
-                        "name": "modify_username",
-                        "description": "Change the username of an existing user",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "user_id": {
-                                    "type": "INTEGER",
-                                    "description": "The ID of the user to modify",
-                                },
-                                "new_username": {
-                                    "type": "STRING",
-                                    "description": "The new username for the user",
-                                },
-                            },
-                            "required": ["user_id", "new_username"],
-                        },
-                    }
-                ]
-            },
-            {
-                "function_declarations": [
-                    {
-                        "name": "get_user",
-                        "description": "Get details of a user by their ID",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "user_id": {
-                                    "type": "INTEGER",
-                                    "description": "The ID of the user to retrieve",
-                                }
-                            },
-                            "required": ["user_id"],
-                        },
-                    }
-                ]
-            },
-            {
-                "function_declarations": [
-                    {
-                        "name": "list_users",
-                        "description": "List all users in the system",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "include_details": {
-                                    "type": "BOOLEAN",
-                                    "description": "Whether to include detailed information about users (default: true)",
-                                }
-                            },
-                        },
-                    }
-                ]
-            },
-            {
-                "function_declarations": [
-                    {
-                        "name": "execute_sql",
-                        "description": "Execute a SQL query directly on the database - USE WITH EXTREME CAUTION",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "query": {
-                                    "type": "STRING",
-                                    "description": "The SQL query to execute on the database",
-                                }
-                            },
-                            "required": ["query"],
-                        },
-                    }
-                ]
-            },
-            {
-                "function_declarations": [
-                    {
-                        "name": "change_user_password",
-                        "description": "Change a user's password in the database",
-                        "parameters": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "user_id": {
-                                    "type": "INTEGER",
-                                    "description": "The ID of the user whose password to change",
-                                },
-                                "new_password": {
-                                    "type": "STRING",
-                                    "description": "The new password to set for the user",
-                                },
-                            },
-                            "required": ["user_id", "new_password"],
-                        },
-                    }
-                ]
-            },
-        ]
+        # Get current price
+        current_price = None
+        if info and "regularMarketPrice" in info:
+            current_price = info["regularMarketPrice"]
+        elif info and "currentPrice" in info:
+            current_price = info["currentPrice"]
 
-        # Import Gemini client directly here to avoid circular imports
-        import google.generativeai as genai
-        from google.generativeai.types import HarmCategory, HarmBlockThreshold
-        import os
-        from dotenv import load_dotenv
-
-        # Load environment variables
-        load_dotenv()
-
-        # Configure Gemini
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-        # Get model
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
-            generation_config={
-                "temperature": 0.2,
-                "top_p": 0.95,
-                "top_k": 40,
-                "max_output_tokens": 8192,
-            },
-            safety_settings={
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            },
-        )
-
-        # Format conversation history for the model
-        formatted_history = []
-        for msg in conversation_history:
-            formatted_history.append(
-                {
-                    "role": "user" if msg["role"] == "user" else "model",
-                    "parts": [msg["content"]],
-                }
-            )
-
-        # Add system prompt - FinGPT Advanced Mode
-        system_prompt = f"""You are FinGPT's advanced assistant that can help with account management and administrative tasks.
-        You have access to functions that can create users, delete users, modify usernames, and retrieve user information.
-        
-        When a user asks you to perform any of these actions, you should:
-        1. Determine which function to call based on their request
-        2. Ask for any missing information needed to call the function
-        3. Once you have all necessary information, call the appropriate function
-        
-        IMPORTANT: The current user's role is: {user_role}
-        
-        When a user asks what you can do, your response should depend on their role:
-        
-        For regular users, focus on these capabilities:
-        - Account management: I can help you view user information and manage account passwords.
-        - Data retrieval: I can get information about users by their ID or list all users in the system.
-        
-        For admin users, list all these capabilities:
-        - User creation: I can create new user accounts with username, password, and role assignment.
-        - User deletion: I can remove users from the system by their ID.
-        - Account modification: I can update usernames and other user details.
-        - Data retrieval: I can get information about users and generate user reports.
-        - Password management: I can help change user passwords when needed.
-        - Advanced operations: I can perform complex database queries for analytics and reporting.
-        
-        For financial data operations, you have access to an execute_sql function for advanced queries.
-        This can be helpful for:
-        - Generating financial reports and analytics
-        - Advanced filtering of user data
-        - Creating custom financial summaries
-        - Updating multiple records efficiently
-        
-        You can also manage user passwords and list all users in the system. When displaying user lists:
-        - Present the data in a clear, tabular format with headers for ID, Username, and Role
-        - Make sure the table is properly aligned and readable
-        - Highlight admin users to distinguish them from regular users
-        
-        Always be professional and helpful, and confirm the details before taking any action.
-        Never share passwords in your responses for privacy reasons.
-        """
-
-        # Create chat session
-        chat = model.start_chat(history=formatted_history)
-
-        # Add the system prompt
-        chat.send_message(system_prompt)
-
-        # Send user query and request function calling
-        response = chat.send_message(user_query, tools=function_defs)
-
-        # Extract the response text properly
-        response_text = ""
-        if hasattr(response, "candidates") and response.candidates:
-            candidate = response.candidates[0]
-            if hasattr(candidate, "content") and candidate.content:
-                for part in candidate.content.parts:
-                    if hasattr(part, "text") and part.text:
-                        response_text += part.text
-
-        # Check if response includes function calls
-        if hasattr(response, "candidates") and response.candidates:
-            candidate = response.candidates[0]
-
-            # Function call present in response
-            if hasattr(candidate, "content") and candidate.content:
-                for part in candidate.content.parts:
-                    if hasattr(part, "function_call") and part.function_call:
-                        function_call = part.function_call
-                        function_name = function_call.name
-                        function_params = function_call.args
-
-                        # Execute the actual function based on the LLM's choice
-                        if function_name == "create_user":
-                            username = function_params.get("username")
-                            password = function_params.get("password")
-                            role = function_params.get("role", "user")
-
-                            user_id, error = create_user(username, password, role)
-
-                            if error:
-                                return {
-                                    "status": "error",
-                                    "message": error,
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            # Get user details
-                            user = get_user_by_id(user_id)
-                            return {
-                                "status": "success",
-                                "message": f"User '{username}' created successfully with ID {user_id}",
-                                "data": {
-                                    "user_id": user["id"],
-                                    "username": user["username"],
-                                    "role": user["role"],
-                                },
-                                "llm_response": response_text,
-                                "function_call": {
-                                    "name": function_name,
-                                    "params": function_params,
-                                },
-                            }
-
-                        elif function_name == "delete_user":
-                            user_id = function_params.get("user_id")
-
-                            success, error = delete_user(user_id)
-
-                            if not success:
-                                return {
-                                    "status": "error",
-                                    "message": error,
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            return {
-                                "status": "success",
-                                "message": f"User with ID {user_id} deleted successfully",
-                                "llm_response": response_text,
-                                "function_call": {
-                                    "name": function_name,
-                                    "params": function_params,
-                                },
-                            }
-
-                        elif function_name == "modify_username":
-                            user_id = function_params.get("user_id")
-                            new_username = function_params.get("new_username")
-
-                            success, error = modify_username(user_id, new_username)
-
-                            if not success:
-                                return {
-                                    "status": "error",
-                                    "message": error,
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            # Get updated user details
-                            user = get_user_by_id(user_id)
-                            return {
-                                "status": "success",
-                                "message": f"Username updated successfully to '{new_username}'",
-                                "data": {
-                                    "user_id": user["id"],
-                                    "username": user["username"],
-                                    "role": user["role"],
-                                },
-                                "llm_response": response_text,
-                                "function_call": {
-                                    "name": function_name,
-                                    "params": function_params,
-                                },
-                            }
-
-                        elif function_name == "get_user":
-                            user_id = function_params.get("user_id")
-
-                            user = get_user_by_id(user_id)
-
-                            if not user:
-                                return {
-                                    "status": "error",
-                                    "message": f"User with ID {user_id} not found",
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            return {
-                                "status": "success",
-                                "message": "User found",
-                                "data": {
-                                    "user_id": user["id"],
-                                    "username": user["username"],
-                                    "role": user["role"],
-                                },
-                                "llm_response": response_text,
-                                "function_call": {
-                                    "name": function_name,
-                                    "params": function_params,
-                                },
-                            }
-
-                        elif function_name == "list_users":
-                            include_details = function_params.get(
-                                "include_details", True
-                            )
-                            users = get_all_users()
-
-                            if not users:
-                                return {
-                                    "status": "info",
-                                    "message": "No users found in the system",
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            # Format user data for display in a table
-                            user_list = []
-                            admin_count = 0
-                            regular_user_count = 0
-
-                            for user in users:
-                                user_data = {
-                                    "id": user["id"],
-                                    "username": user["username"],
-                                    "role": user["role"],
-                                }
-
-                                # Count user types
-                                if user["role"] == "admin":
-                                    admin_count += 1
-                                else:
-                                    regular_user_count += 1
-
-                                user_list.append(user_data)
-
-                            # Sort users by ID for consistent display
-                            user_list.sort(key=lambda x: x["id"])
-
-                            return {
-                                "status": "success",
-                                "message": f"Found {len(users)} users in the system ({admin_count} admins, {regular_user_count} regular users)",
-                                "data": {
-                                    "users": user_list,
-                                    "include_details": include_details,
-                                    "summary": {
-                                        "total_users": len(users),
-                                        "admin_count": admin_count,
-                                        "regular_user_count": regular_user_count,
-                                    },
-                                    "table_headers": ["ID", "Username", "Role"],
-                                },
-                                "llm_response": response_text,
-                                "function_call": {
-                                    "name": function_name,
-                                    "params": function_params,
-                                },
-                            }
-
-                        elif function_name == "execute_sql":
-                            query = function_params.get("query")
-                            if not query:
-                                return {
-                                    "status": "error",
-                                    "message": "Query is required",
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            try:
-                                # Get the user to see if they exist
-                                user = get_user_by_id(function_params.get("user_id"))
-                                if not user:
-                                    return {
-                                        "status": "error",
-                                        "message": f"User with ID {function_params.get('user_id')} not found",
-                                        "llm_response": response_text,
-                                        "function_call": {
-                                            "name": function_name,
-                                            "params": function_params,
-                                        },
-                                    }
-
-                                # Execute the SQL query
-                                conn = get_db_connection()
-                                cursor = conn.cursor()
-                                cursor.execute(query)
-                                result = cursor.fetchall()
-                                conn.commit()
-                                conn.close()
-
-                                return {
-                                    "status": "success",
-                                    "message": f"SQL query executed successfully",
-                                    "data": {"result": result},
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-                            except Exception as e:
-                                error_id = str(uuid.uuid4())
-                                error_msg = f"Error executing SQL query: {str(e)}"
-                                api_logger.error(f"{error_msg} (ID: {error_id})")
-                                error_logger.error(
-                                    f"Error ID {error_id}: {error_msg}", exc_info=True
-                                )
-
-                                return {
-                                    "status": "error",
-                                    "message": error_msg,
-                                    "error_id": error_id,
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                        elif function_name == "change_user_password":
-                            # FinGPT password management function
-                            user_id = function_params.get("user_id")
-                            new_password = function_params.get("new_password")
-
-                            if not user_id or not new_password:
-                                return {
-                                    "status": "error",
-                                    "message": "User ID and new password are required",
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-                            try:
-                                # Get the user to see if they exist
-                                user = get_user_by_id(user_id)
-                                if not user:
-                                    return {
-                                        "status": "error",
-                                        "message": f"User with ID {user_id} not found",
-                                        "llm_response": response_text,
-                                        "function_call": {
-                                            "name": function_name,
-                                            "params": function_params,
-                                        },
-                                    }
-
-                                # Generate new password hash
-                                new_password_hash = hash_password(new_password)
-
-                                # Update the password in the database
-                                conn = get_db_connection()
-                                conn.execute(
-                                    "UPDATE users SET password_hash = ? WHERE id = ?",
-                                    (new_password_hash, user_id),
-                                )
-                                conn.commit()
-                                conn.close()
-
-                                return {
-                                    "status": "success",
-                                    "message": f"Password changed successfully for user {user['username']}",
-                                    "data": {
-                                        "user_id": user_id,
-                                        "username": user["username"],
-                                    },
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": {
-                                            "user_id": user_id,
-                                            "new_password": "********",  # Mask the password in the response
-                                        },
-                                    },
-                                }
-                            except Exception as e:
-                                error_id = str(uuid.uuid4())
-                                error_msg = f"Error changing user password: {str(e)}"
-                                api_logger.error(f"{error_msg} (ID: {error_id})")
-                                error_logger.error(
-                                    f"Error ID {error_id}: {error_msg}", exc_info=True
-                                )
-
-                                return {
-                                    "status": "error",
-                                    "message": error_msg,
-                                    "error_id": error_id,
-                                    "llm_response": response_text,
-                                    "function_call": {
-                                        "name": function_name,
-                                        "params": function_params,
-                                    },
-                                }
-
-        # If we get here, either there's no function call or Gemini needs more information
-        return {"status": "info", "llm_response": response_text, "function_call": None}
-
-    except Exception as e:
-        error_id = str(uuid.uuid4())
-        error_msg = f"Error processing LLM tool call: {str(e)}"
-        api_logger.error(f"{error_msg} (ID: {error_id})")
-        error_logger.error(f"Error ID {error_id}: {error_msg}", exc_info=True)
+        if not current_price:
+            hist = ticker.history(period="1d", interval="1m")
+            if not hist.empty:
+                current_price = float(hist["Close"].iloc[-1])
 
         return {
-            "status": "error",
-            "message": f"An error occurred: {str(e)}",
-            "error_id": error_id,
+            "symbol": symbol.upper(),
+            "company_name": info.get("longName", "Unknown"),
+            "current_price": current_price,
+            "market_cap": info.get("marketCap"),
+            "pe_ratio": info.get("trailingPE"),
+            "dividend_yield": info.get("dividendYield"),
+            "sector": info.get("sector", "Unknown"),
+            "industry": info.get("industry", "Unknown"),
+            "price_change": info.get("regularMarketChange"),
+            "price_change_percent": info.get("regularMarketChangePercent"),
+            "volume": info.get("regularMarketVolume"),
+            "fifty_two_week_high": info.get("fiftyTwoWeekHigh"),
+            "fifty_two_week_low": info.get("fiftyTwoWeekLow"),
         }
+
+    except Exception as e:
+        logger.error(f"Error fetching stock info for {symbol}: {str(e)}")
+        raise Exception(f"Could not fetch stock information for {symbol}: {str(e)}")
+
+
+# Stock functions available for direct calling
+stock_functions = {
+    "get_stock_price": get_stock_price,
+    "get_stock_info": get_stock_info,
+}
+
+
+def check_ollama_connection() -> bool:
+    """Check if Ollama server is running and accessible"""
+    try:
+        ollama.list()
+        return True
+    except Exception as e:
+        logger.error(f"Ollama connection failed: {str(e)}")
+        return False
+
+
+def extract_stock_symbols(message: str) -> list:
+    """Extract multiple stock symbols from user message"""
+    import re
+
+    # Common stock symbols (add more as needed)
+    known_symbols = {
+        "apple": "AAPL",
+        "tesla": "TSLA",
+        "google": "GOOGL",
+        "alphabet": "GOOGL",
+        "microsoft": "MSFT",
+        "amazon": "AMZN",
+        "meta": "META",
+        "facebook": "META",
+        "nvidia": "NVDA",
+        "netflix": "NFLX",
+        "spotify": "SPOT",
+        "uber": "UBER",
+        "disney": "DIS",
+        "coca cola": "KO",
+        "pepsi": "PEP",
+        "walmart": "WMT",
+        "target": "TGT",
+        "ibm": "IBM",
+        "intel": "INTC",
+        "amd": "AMD",
+        "salesforce": "CRM",
+        "oracle": "ORCL",
+        "adobe": "ADBE",
+        "paypal": "PYPL",
+        "visa": "V",
+        "mastercard": "MA",
+        "jpmorgan": "JPM",
+        "goldman sachs": "GS",
+        "berkshire": "BRK-A",
+        "johnson": "JNJ",
+        "pfizer": "PFE",
+        "moderna": "MRNA",
+        "boeing": "BA",
+        "ge": "GE",
+        "ford": "F",
+        "gm": "GM",
+        "general motors": "GM",
+    }
+
+    message_lower = message.lower()
+    found_symbols = set()
+
+    # First, look for explicit stock symbols (3-5 uppercase letters)
+    symbol_pattern = r"\b([A-Z]{1,5})\b"
+    symbols = re.findall(symbol_pattern, message)
+    for symbol in symbols:
+        # Filter out common words that might match the pattern
+        if symbol not in [
+            "AND",
+            "OR",
+            "THE",
+            "FOR",
+            "WITH",
+            "FROM",
+            "TO",
+            "BY",
+            "OF",
+            "IN",
+            "ON",
+            "AT",
+            "IS",
+            "ARE",
+            "WAS",
+            "WERE",
+        ]:
+            found_symbols.add(symbol)
+
+    # Then look for company names
+    for company, symbol in known_symbols.items():
+        if company in message_lower:
+            found_symbols.add(symbol)
+
+    return list(found_symbols)
+
+
+def extract_stock_symbol(message: str) -> str:
+    """Extract single stock symbol from user message (for backward compatibility)"""
+    symbols = extract_stock_symbols(message)
+    return symbols[0] if symbols else None
+
+
+def is_stock_query(message: str) -> bool:
+    """Check if the message is asking for stock information"""
+    stock_keywords = [
+        "stock",
+        "price",
+        "share",
+        "ticker",
+        "market",
+        "trading",
+        "stock price",
+        "current price",
+        "stock info",
+        "stock data",
+        "quote",
+        "shares",
+        "equity",
+        "NYSE",
+        "NASDAQ",
+    ]
+
+    message_lower = message.lower()
+    has_stock_keyword = any(
+        keyword.lower() in message_lower for keyword in stock_keywords
+    )
+    has_stock_symbol = extract_stock_symbol(message) is not None
+
+    return has_stock_keyword or has_stock_symbol
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Check Ollama connection on startup"""
+    if not check_ollama_connection():
+        logger.warning(
+            "Ollama server is not accessible. Please ensure Ollama is running."
+        )
+    else:
+        logger.info("Ollama server connection verified")
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    ollama_status = check_ollama_connection()
+    return {
+        "status": "healthy" if ollama_status else "degraded",
+        "ollama_connected": ollama_status,
+        "timestamp": time.time(),
+    }
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    """
+    Simple chat endpoint with automatic stock data fetching
+    """
+    try:
+        start_time = time.time()
+
+        # Generate session ID if not provided
+        session_id = request.session_id or str(uuid.uuid4())
+
+        logger.info(f"Processing chat request for session: {session_id}")
+        logger.info(f"User message: {request.message[:100]}...")
+
+        # Check Ollama connection
+        if not check_ollama_connection():
+            raise HTTPException(
+                status_code=503, detail="Ollama service is not available"
+            )
+
+        # Prepare the message for the model
+        enhanced_message = request.message
+        structured_stock_data = None
+
+        # Check if this is a stock-related query and automatically fetch data
+        if is_stock_query(request.message):
+            symbols = extract_stock_symbols(request.message)
+            if symbols:
+                logger.info(f"Stock query detected for symbols: {symbols}")
+                stock_data_parts = []
+                structured_stock_data = []
+
+                # Check if it's a comparison query (multiple symbols)
+                is_comparison = len(symbols) > 1 or any(
+                    word in request.message.lower()
+                    for word in ["compare", "comparison", "vs", "versus", "against"]
+                )
+
+                try:
+                    for symbol in symbols:
+                        # Get structured stock data for chart
+                        try:
+                            stock_info = get_stock_info(symbol)
+                            current_price = stock_info.get("current_price")
+                            if current_price:
+                                structured_stock_data.append(
+                                    {
+                                        "symbol": symbol.upper(),
+                                        "price": float(current_price),
+                                        "change": 0,  # Could calculate change if needed
+                                        "company_name": stock_info.get(
+                                            "company_name", symbol
+                                        ),
+                                    }
+                                )
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to get structured data for {symbol}: {e}"
+                            )
+
+                        # Generate text for AI context
+                        if (
+                            any(
+                                word in request.message.lower()
+                                for word in [
+                                    "detailed",
+                                    "information",
+                                    "info",
+                                    "analysis",
+                                    "company",
+                                ]
+                            )
+                            and not is_comparison
+                        ):
+                            # Detailed info for single stock
+                            stock_info = get_stock_info(symbol)
+                            stock_data = (
+                                f"\n\nDetailed stock information for {symbol}:\n"
+                            )
+                            stock_data += (
+                                f"Company: {stock_info.get('company_name', 'N/A')}\n"
+                            )
+                            stock_data += f"Current Price: ${stock_info.get('current_price', 'N/A')}\n"
+                            stock_data += (
+                                f"Market Cap: ${stock_info.get('market_cap', 'N/A'):,}\n"
+                                if stock_info.get("market_cap")
+                                else f"Market Cap: N/A\n"
+                            )
+                            stock_data += (
+                                f"P/E Ratio: {stock_info.get('pe_ratio', 'N/A')}\n"
+                            )
+                            stock_data += f"Dividend Yield: {stock_info.get('dividend_yield', 'N/A')}\n"
+                            stock_data += f"Sector: {stock_info.get('sector', 'N/A')}\n"
+                            stock_data += (
+                                f"Industry: {stock_info.get('industry', 'N/A')}\n"
+                            )
+                            stock_data += f"52-Week High: ${stock_info.get('fifty_two_week_high', 'N/A')}\n"
+                            stock_data += f"52-Week Low: ${stock_info.get('fifty_two_week_low', 'N/A')}\n"
+                            stock_data_parts.append(stock_data)
+                        else:
+                            # Price info for comparison or simple queries
+                            stock_price = get_stock_price(symbol)
+                            if is_comparison:
+                                stock_data_parts.append(f"{symbol}: ${stock_price}")
+                            else:
+                                stock_data_parts.append(
+                                    f"\n\nCurrent stock price for {symbol}: ${stock_price}"
+                                )
+
+                    if is_comparison and len(symbols) > 1:
+                        stock_data = f"\n\nStock price comparison:\n" + "\n".join(
+                            stock_data_parts
+                        )
+                    else:
+                        stock_data = "\n".join(stock_data_parts)
+
+                    enhanced_message = request.message + stock_data
+                    logger.info(f"Added stock data for {len(symbols)} symbols")
+
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to get stock data for symbols {symbols}: {e}"
+                    )
+                    enhanced_message = (
+                        request.message
+                        + f"\n\nNote: Unable to retrieve current stock data for some symbols."
+                    )
+            else:
+                logger.info("Stock query detected but no symbols found")
+
+        # Use finance model for all queries
+        finance_response = ollama.chat(
+            model=FINANCE_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a knowledgeable financial advisor specializing in stock market analysis, investment strategies, and financial planning. When provided with current stock data in the user's message, use it to give accurate and helpful analysis. Always be helpful and provide insights based on the data provided.",
+                },
+                {"role": "user", "content": enhanced_message},
+            ],
+        )
+
+        final_response = (
+            finance_response.message.content or "I couldn't process your request."
+        )
+
+        processing_time = time.time() - start_time
+
+        logger.info(f"Chat request completed in {processing_time:.2f} seconds")
+
+        return ChatResponse(
+            response=final_response,
+            processing_time=processing_time,
+            session_id=session_id,
+            stock_data=structured_stock_data,
+        )
+
+    except Exception as e:
+        error_msg = f"Error processing chat request: {str(e)}"
+        logger.error(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Ollama Finance Chat API",
+        "version": "1.0.0",
+        "endpoints": {"chat": "/chat", "health": "/health"},
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
