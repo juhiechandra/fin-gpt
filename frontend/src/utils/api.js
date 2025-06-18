@@ -270,3 +270,91 @@ export const cleanupDocuments = async() => {
         throw error;
     }
 };
+
+// Stock Data API functions
+export const searchStocks = async(query) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/stock/search`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                query: query,
+            }),
+        });
+        return handleResponse(response);
+    } catch (error) {
+        console.error("Search Stocks API Error:", error);
+        throw error;
+    }
+};
+
+export const getStockData = async(
+    symbol,
+    period = "1y",
+    interval = "1d",
+    chartType = "candlestick"
+) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/stock/data`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                symbol: symbol,
+                period: period,
+                interval: interval,
+                chart_type: chartType,
+            }),
+        });
+        return handleResponse(response);
+    } catch (error) {
+        console.error("Get Stock Data API Error:", error);
+        throw error;
+    }
+};
+
+export const getMarketOverview = async() => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/stock/market-overview`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return handleResponse(response);
+    } catch (error) {
+        console.error("Get Market Overview API Error:", error);
+        throw error;
+    }
+};
+
+export const analyzeStock = async(
+    symbol,
+    period = "1y",
+    includeNews = true,
+    includeChart = true,
+    chartType = "candlestick"
+) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/stock/analyze`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                symbol: symbol,
+                period: period,
+                include_news: includeNews,
+                include_chart: includeChart,
+                chart_type: chartType,
+            }),
+        });
+        return handleResponse(response);
+    } catch (error) {
+        console.error("Analyze Stock API Error:", error);
+        throw error;
+    }
+};
