@@ -4,7 +4,7 @@ AI-powered finance chatbot with real-time stock data and document analysis.
 
 ## 🎥 Demo
 
-<[https://github.com/user-attachments/assets/fingpt.mp4](https://github.com/juhiechandra/fin-gpt/raw/refs/heads/main/fingpt.mp4)>
+<https://github.com/juhiechandra/fin-gpt/raw/refs/heads/main/fingpt.mp4>
 
 ## Features
 
