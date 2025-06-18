@@ -275,3 +275,195 @@
 2025-06-18 16:40:31 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
 2025-06-18 16:40:31 - db - INFO - Operation create_users_table completed in 0.00 seconds
 2025-06-18 16:40:31 - db - INFO - Database tables initialized successfully
+2025-06-18 18:32:11 - db - INFO - Database path: rag_app.db
+2025-06-18 18:32:11 - db - INFO - Using existing database: rag_app.db
+2025-06-18 18:32:11 - db - INFO - Starting operation: create_application_logs
+2025-06-18 18:32:11 - db - INFO - Application logs table created or verified
+2025-06-18 18:32:11 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 18:32:11 - db - INFO - Starting operation: create_document_store
+2025-06-18 18:32:11 - db - INFO - Document store table created or verified
+2025-06-18 18:32:11 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 18:32:11 - db - INFO - Starting operation: create_users_table
+2025-06-18 18:32:11 - db - INFO - Users table created or verified
+2025-06-18 18:32:11 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 18:32:11 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 18:32:11 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 18:32:11 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 18:32:11 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 18:32:11 - db - INFO - Database tables initialized successfully
+2025-06-18 19:11:07 - db - INFO - Database path: rag_app.db
+2025-06-18 19:11:07 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:11:07 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:11:07 - db - INFO - Application logs table created or verified
+2025-06-18 19:11:07 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:11:07 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:11:07 - db - INFO - Document store table created or verified
+2025-06-18 19:11:07 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:11:07 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:11:07 - db - INFO - Users table created or verified
+2025-06-18 19:11:07 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:11:07 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:11:07 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:11:07 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:11:07 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:11:07 - db - INFO - Database tables initialized successfully
+2025-06-18 19:11:16 - db - INFO - Database path: rag_app.db
+2025-06-18 19:11:16 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:11:16 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:11:16 - db - INFO - Application logs table created or verified
+2025-06-18 19:11:16 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:11:16 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:11:16 - db - INFO - Document store table created or verified
+2025-06-18 19:11:16 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:11:16 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:11:16 - db - INFO - Users table created or verified
+2025-06-18 19:11:16 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:11:16 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:11:16 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:11:16 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:11:16 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:11:16 - db - INFO - Database tables initialized successfully
+2025-06-18 19:11:24 - db - INFO - Database path: rag_app.db
+2025-06-18 19:11:24 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:11:24 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:11:24 - db - INFO - Application logs table created or verified
+2025-06-18 19:11:24 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:11:24 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:11:24 - db - INFO - Document store table created or verified
+2025-06-18 19:11:24 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:11:24 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:11:24 - db - INFO - Users table created or verified
+2025-06-18 19:11:24 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:11:24 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:11:24 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:11:24 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:11:24 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:11:24 - db - INFO - Database tables initialized successfully
+2025-06-18 19:11:35 - db - INFO - Database path: rag_app.db
+2025-06-18 19:11:35 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:11:35 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:11:35 - db - INFO - Application logs table created or verified
+2025-06-18 19:11:35 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:11:35 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:11:35 - db - INFO - Document store table created or verified
+2025-06-18 19:11:35 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:11:35 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:11:35 - db - INFO - Users table created or verified
+2025-06-18 19:11:35 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:11:35 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:11:35 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:11:35 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:11:35 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:11:35 - db - INFO - Database tables initialized successfully
+2025-06-18 19:11:46 - db - INFO - Database path: rag_app.db
+2025-06-18 19:11:46 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:11:46 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:11:46 - db - INFO - Application logs table created or verified
+2025-06-18 19:11:46 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:11:46 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:11:46 - db - INFO - Document store table created or verified
+2025-06-18 19:11:46 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:11:46 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:11:46 - db - INFO - Users table created or verified
+2025-06-18 19:11:46 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:11:46 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:11:46 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:11:46 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:11:46 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:11:46 - db - INFO - Database tables initialized successfully
+2025-06-18 19:14:37 - db - INFO - Database path: rag_app.db
+2025-06-18 19:14:37 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:14:37 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:14:37 - db - INFO - Application logs table created or verified
+2025-06-18 19:14:37 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:14:37 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:14:37 - db - INFO - Document store table created or verified
+2025-06-18 19:14:37 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:14:37 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:14:37 - db - INFO - Users table created or verified
+2025-06-18 19:14:37 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:14:37 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:14:37 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:14:37 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:14:37 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:14:37 - db - INFO - Database tables initialized successfully
+2025-06-18 19:14:58 - db - INFO - Starting operation: authenticate_user:user
+2025-06-18 19:14:58 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:14:58 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:14:58 - db - INFO - Operation authenticate_user:user completed in 0.00 seconds
+2025-06-18 19:15:02 - db - INFO - Starting operation: get_chat_history:session_1750254298302
+2025-06-18 19:15:02 - db - INFO - Retrieved 0 messages for session session_1750254298302
+2025-06-18 19:15:02 - db - INFO - Operation get_chat_history:session_1750254298302 completed in 0.00 seconds
+2025-06-18 19:15:04 - db - INFO - Starting operation: insert_logs:session_1750254298302
+2025-06-18 19:15:04 - db - INFO - Inserted log for session: session_1750254298302
+2025-06-18 19:15:04 - db - INFO - Operation insert_logs:session_1750254298302 completed in 0.00 seconds
+2025-06-18 19:16:11 - db - INFO - Database path: rag_app.db
+2025-06-18 19:16:11 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:16:11 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:16:11 - db - INFO - Application logs table created or verified
+2025-06-18 19:16:11 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:16:11 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:16:11 - db - INFO - Document store table created or verified
+2025-06-18 19:16:11 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:16:11 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:16:11 - db - INFO - Users table created or verified
+2025-06-18 19:16:11 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:16:11 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:16:11 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:16:11 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:16:11 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:16:11 - db - INFO - Database tables initialized successfully
+2025-06-18 19:16:35 - db - INFO - Starting operation: authenticate_user:user
+2025-06-18 19:16:35 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:16:35 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:16:35 - db - INFO - Operation authenticate_user:user completed in 0.00 seconds
+2025-06-18 19:16:41 - db - INFO - Starting operation: get_chat_history:session_1750254395686
+2025-06-18 19:16:41 - db - INFO - Retrieved 0 messages for session session_1750254395686
+2025-06-18 19:16:41 - db - INFO - Operation get_chat_history:session_1750254395686 completed in 0.00 seconds
+2025-06-18 19:16:48 - db - INFO - Starting operation: insert_logs:session_1750254395686
+2025-06-18 19:16:48 - db - INFO - Inserted log for session: session_1750254395686
+2025-06-18 19:16:48 - db - INFO - Operation insert_logs:session_1750254395686 completed in 0.05 seconds
+2025-06-18 19:16:56 - db - INFO - Starting operation: get_chat_history:session_1750254395686
+2025-06-18 19:16:56 - db - INFO - Retrieved 1 messages for session session_1750254395686
+2025-06-18 19:16:56 - db - INFO - Operation get_chat_history:session_1750254395686 completed in 0.02 seconds
+2025-06-18 19:17:16 - db - INFO - Starting operation: insert_logs:session_1750254395686
+2025-06-18 19:17:16 - db - INFO - Inserted log for session: session_1750254395686
+2025-06-18 19:17:16 - db - INFO - Operation insert_logs:session_1750254395686 completed in 0.02 seconds
+2025-06-18 19:19:09 - db - INFO - Starting operation: get_chat_history:session_1750254395686
+2025-06-18 19:19:09 - db - INFO - Retrieved 2 messages for session session_1750254395686
+2025-06-18 19:19:09 - db - INFO - Operation get_chat_history:session_1750254395686 completed in 0.01 seconds
+2025-06-18 19:19:40 - db - INFO - Starting operation: insert_logs:session_1750254395686
+2025-06-18 19:19:40 - db - INFO - Inserted log for session: session_1750254395686
+2025-06-18 19:19:40 - db - INFO - Operation insert_logs:session_1750254395686 completed in 0.01 seconds
+2025-06-18 19:20:34 - db - INFO - Database path: rag_app.db
+2025-06-18 19:20:34 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:20:34 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:20:34 - db - INFO - Application logs table created or verified
+2025-06-18 19:20:34 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:20:34 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:20:34 - db - INFO - Document store table created or verified
+2025-06-18 19:20:34 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:20:34 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:20:34 - db - INFO - Users table created or verified
+2025-06-18 19:20:34 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:20:34 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:20:34 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:20:34 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:20:34 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:20:34 - db - INFO - Database tables initialized successfully
+2025-06-18 19:20:35 - db - INFO - Database path: rag_app.db
+2025-06-18 19:20:35 - db - INFO - Using existing database: rag_app.db
+2025-06-18 19:20:35 - db - INFO - Starting operation: create_application_logs
+2025-06-18 19:20:35 - db - INFO - Application logs table created or verified
+2025-06-18 19:20:35 - db - INFO - Operation create_application_logs completed in 0.00 seconds
+2025-06-18 19:20:35 - db - INFO - Starting operation: create_document_store
+2025-06-18 19:20:35 - db - INFO - Document store table created or verified
+2025-06-18 19:20:35 - db - INFO - Operation create_document_store completed in 0.00 seconds
+2025-06-18 19:20:35 - db - INFO - Starting operation: create_users_table
+2025-06-18 19:20:35 - db - INFO - Users table created or verified
+2025-06-18 19:20:35 - db - INFO - Starting operation: get_user_by_username:admin
+2025-06-18 19:20:35 - db - INFO - Operation get_user_by_username:admin completed in 0.00 seconds
+2025-06-18 19:20:35 - db - INFO - Starting operation: get_user_by_username:user
+2025-06-18 19:20:35 - db - INFO - Operation get_user_by_username:user completed in 0.00 seconds
+2025-06-18 19:20:35 - db - INFO - Operation create_users_table completed in 0.00 seconds
+2025-06-18 19:20:35 - db - INFO - Database tables initialized successfully

@@ -393,6 +393,42 @@ const LogoutButton = styled.button`
   }
 `;
 
+const ModelSelector = styled.select`
+  background: ${theme.colors.background};
+  color: ${theme.colors.text.primary};
+  border: 1px solid ${theme.colors.border};
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  font-family: ${theme.fonts.body};
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+
+  option {
+    background: ${theme.colors.background};
+    color: ${theme.colors.text.primary};
+    padding: 0.5rem;
+  }
+`;
+
+const ModelSelectorWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.875rem;
+    color: ${theme.colors.text.secondary};
+    font-weight: 500;
+  }
+`;
+
 export default function ChatPage() {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
@@ -407,6 +443,7 @@ export default function ChatPage() {
   const [sessionId] = useState(`session_${Date.now()}`);
   const [document, setDocument] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("ollama-finance-rag");
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -545,7 +582,7 @@ export default function ChatPage() {
       const response = await sendChatMessage(
         newMessage.content,
         sessionId,
-        "gemini-2.0-flash"
+        selectedModel
       );
 
       setMessages((prev) => [
@@ -667,6 +704,25 @@ export default function ChatPage() {
                 : "Finance Mode"}
             </ToggleLabel>
           </div>
+
+          <ModelSelectorWrapper>
+            <label>Model:</label>
+            <ModelSelector
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              disabled={isAdminModeEnabled}
+            >
+              <option value="ollama-finance-rag">
+                💰 Ollama Finance (with RAG)
+              </option>
+              <option value="ollama-finance-chat">
+                💬 Ollama Finance (Chat only)
+              </option>
+              <option value="gemini-2.0-flash">🚀 Gemini 2.0 Flash</option>
+              <option value="gemini-2.0-pro">⚡ Gemini 2.0 Pro</option>
+              <option value="fingpt-forecaster">📈 FinGPT Forecaster</option>
+            </ModelSelector>
+          </ModelSelectorWrapper>
         </ControlsSection>
 
         <ChatMessages>

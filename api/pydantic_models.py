@@ -13,6 +13,10 @@ class ModelName(str, Enum):
     # FinGPT models
     FINGPT_FORECASTER = "fingpt-forecaster"
 
+    # Ollama models
+    OLLAMA_FINANCE_RAG = "ollama-finance-rag"
+    OLLAMA_FINANCE_CHAT = "ollama-finance-chat"
+
     # No OpenAI models - removed
 
 
@@ -39,6 +43,10 @@ class QueryInput(BaseModel):
 
         # If it's FinGPT model, allow it
         if v.startswith("fingpt"):
+            return v
+
+        # If it's Ollama model, allow it
+        if v.startswith("ollama"):
             return v
 
         # Default to gemini-2.0-flash for unsupported models

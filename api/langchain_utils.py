@@ -19,6 +19,15 @@ except ImportError as e:
     model_logger.warning(f"FinGPT utilities not available: {e}")
     fingpt_available = False
 
+# Import Ollama utilities
+try:
+    from ollama_utils import get_ollama_rag_chain, get_ollama_simple_chat
+
+    ollama_available = True
+except ImportError as e:
+    model_logger.warning(f"Ollama utilities not available: {e}")
+    ollama_available = False
+
 load_dotenv()
 
 model_logger.info("Initializing LangChain utilities")
@@ -44,6 +53,21 @@ def get_rag_chain(model="gemini-2.0-flash", use_hybrid_search=True):
             model = "gemini-2.0-flash"
         else:
             return get_fingpt_rag_chain(use_hybrid_search=use_hybrid_search)
+
+    # Check if Ollama model is requested
+    if model.startswith("ollama"):
+        model_logger.info(f"Ollama model requested: {model}")
+        if not ollama_available:
+            model_logger.error("Ollama utilities not available, falling back to Gemini")
+            model = "gemini-2.0-flash"
+        else:
+            if model == "ollama-finance-rag":
+                return get_ollama_rag_chain(use_hybrid_search=use_hybrid_search)
+            elif model == "ollama-finance-chat":
+                return get_ollama_simple_chat()
+            else:
+                # Default to RAG for unknown ollama models
+                return get_ollama_rag_chain(use_hybrid_search=use_hybrid_search)
 
     with PerformanceTimer(model_logger, f"get_rag_chain:{model}"):
         try:

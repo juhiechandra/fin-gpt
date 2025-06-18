@@ -934,3 +934,115 @@
 2025-06-18 16:40:31 - model - INFO - FAISS vector store loaded
 2025-06-18 16:40:31 - model - WARNING - FinGPT utilities not available: No module named 'torch'
 2025-06-18 16:40:31 - model - INFO - Initializing LangChain utilities
+2025-06-18 18:32:11 - model - INFO - Configuring API clients
+2025-06-18 18:32:11 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 18:32:11 - model - INFO - Embedding function initialized
+2025-06-18 18:32:11 - model - INFO - Loading existing FAISS index
+2025-06-18 18:32:11 - model - INFO - FAISS vector store loaded
+2025-06-18 18:32:11 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 18:32:11 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:11:07 - model - INFO - Configuring API clients
+2025-06-18 19:11:07 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:11:07 - model - INFO - Embedding function initialized
+2025-06-18 19:11:07 - model - INFO - Loading existing FAISS index
+2025-06-18 19:11:07 - model - INFO - FAISS vector store loaded
+2025-06-18 19:11:07 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:11:07 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:11:16 - model - INFO - Configuring API clients
+2025-06-18 19:11:16 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:11:16 - model - INFO - Embedding function initialized
+2025-06-18 19:11:16 - model - INFO - Loading existing FAISS index
+2025-06-18 19:11:16 - model - INFO - FAISS vector store loaded
+2025-06-18 19:11:16 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:11:16 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:11:24 - model - INFO - Configuring API clients
+2025-06-18 19:11:24 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:11:24 - model - INFO - Embedding function initialized
+2025-06-18 19:11:24 - model - INFO - Loading existing FAISS index
+2025-06-18 19:11:24 - model - INFO - FAISS vector store loaded
+2025-06-18 19:11:24 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:11:24 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:11:35 - model - INFO - Configuring API clients
+2025-06-18 19:11:35 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:11:35 - model - INFO - Embedding function initialized
+2025-06-18 19:11:35 - model - INFO - Loading existing FAISS index
+2025-06-18 19:11:35 - model - INFO - FAISS vector store loaded
+2025-06-18 19:11:35 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:11:35 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:11:46 - model - INFO - Configuring API clients
+2025-06-18 19:11:46 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:11:46 - model - INFO - Embedding function initialized
+2025-06-18 19:11:46 - model - INFO - Loading existing FAISS index
+2025-06-18 19:11:46 - model - INFO - FAISS vector store loaded
+2025-06-18 19:11:46 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:11:46 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:13:48 - model - INFO - Sending request to Ollama with model: jjansen/adapt-finance-llama2-7b:latest
+2025-06-18 19:14:04 - model - INFO - Ollama response received in 16.35s
+2025-06-18 19:14:37 - model - INFO - Configuring API clients
+2025-06-18 19:14:37 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:14:37 - model - INFO - Embedding function initialized
+2025-06-18 19:14:37 - model - INFO - Loading existing FAISS index
+2025-06-18 19:14:37 - model - INFO - FAISS vector store loaded
+2025-06-18 19:14:37 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:14:37 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:15:02 - model - INFO - Starting operation: get_rag_chain:gemini-2.0-flash
+2025-06-18 19:15:02 - model - INFO - Configuring retriever for model: gemini-2.0-flash
+2025-06-18 19:15:02 - model - INFO - Using hybrid search (vector + BM25)
+2025-06-18 19:15:02 - model - INFO - Starting operation: create_hybrid_retriever_from_faiss
+2025-06-18 19:15:02 - model - INFO - Using 1 documents from vectorstore
+2025-06-18 19:15:02 - model - INFO - BM25 retriever initialized with 1 documents
+2025-06-18 19:15:02 - model - INFO - LangChain BM25Retriever initialized with k=6
+2025-06-18 19:15:02 - model - INFO - Hybrid retriever initialized with weights: vector=0.6, keyword=0.4
+2025-06-18 19:15:02 - model - INFO - LangChain HybridRetriever initialized with k=6, weights: vector=0.6, keyword=0.4
+2025-06-18 19:15:02 - model - INFO - Created hybrid retriever with k=6
+2025-06-18 19:15:02 - model - INFO - Operation create_hybrid_retriever_from_faiss completed in 0.00 seconds
+2025-06-18 19:15:02 - model - INFO - Hybrid retriever configured
+2025-06-18 19:15:02 - model - INFO - Using Gemini model: gemini-2.0-flash
+2025-06-18 19:15:02 - model - INFO - Creating contextualization prompt
+2025-06-18 19:15:02 - model - INFO - Creating history-aware retriever
+2025-06-18 19:15:02 - model - INFO - Creating QA prompt
+2025-06-18 19:15:02 - model - INFO - Creating question-answer chain
+2025-06-18 19:15:02 - model - INFO - Creating retrieval chain
+2025-06-18 19:15:02 - model - INFO - RAG chain created successfully for model: gemini-2.0-flash
+2025-06-18 19:15:02 - model - INFO - Operation get_rag_chain:gemini-2.0-flash completed in 0.01 seconds
+2025-06-18 19:15:02 - model - INFO - Starting operation: Hybrid retrieval
+2025-06-18 19:15:02 - model - INFO - Starting operation: BM25 retrieval
+2025-06-18 19:15:02 - model - INFO - BM25 retrieved 0 documents for query: hi...
+2025-06-18 19:15:02 - model - INFO - Operation BM25 retrieval completed in 0.00 seconds
+2025-06-18 19:15:02 - model - INFO - Vector search returned 1 documents
+2025-06-18 19:15:02 - model - INFO - Keyword search returned 0 documents
+2025-06-18 19:15:02 - model - INFO - RRF fusion returned 1 documents
+2025-06-18 19:15:02 - model - INFO - Operation Hybrid retrieval completed in 0.50 seconds
+2025-06-18 19:16:11 - model - INFO - Configuring API clients
+2025-06-18 19:16:11 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:16:11 - model - INFO - Embedding function initialized
+2025-06-18 19:16:11 - model - INFO - Loading existing FAISS index
+2025-06-18 19:16:11 - model - INFO - FAISS vector store loaded
+2025-06-18 19:16:11 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:16:11 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:16:41 - model - INFO - Ollama model requested: ollama-finance-chat
+2025-06-18 19:16:41 - model - INFO - Creating simple Ollama chat (no RAG)
+2025-06-18 19:16:41 - model - INFO - Sending request to Ollama with model: jjansen/adapt-finance-llama2-7b:latest
+2025-06-18 19:16:48 - model - INFO - Ollama response received in 7.29s
+2025-06-18 19:16:56 - model - INFO - Ollama model requested: ollama-finance-chat
+2025-06-18 19:16:56 - model - INFO - Creating simple Ollama chat (no RAG)
+2025-06-18 19:16:56 - model - INFO - Sending request to Ollama with model: jjansen/adapt-finance-llama2-7b:latest
+2025-06-18 19:17:16 - model - INFO - Ollama response received in 19.95s
+2025-06-18 19:19:09 - model - INFO - Ollama model requested: ollama-finance-chat
+2025-06-18 19:19:09 - model - INFO - Creating simple Ollama chat (no RAG)
+2025-06-18 19:19:09 - model - INFO - Sending request to Ollama with model: jjansen/adapt-finance-llama2-7b:latest
+2025-06-18 19:19:40 - model - INFO - Ollama response received in 30.79s
+2025-06-18 19:20:34 - model - INFO - Configuring API clients
+2025-06-18 19:20:34 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:20:34 - model - INFO - Embedding function initialized
+2025-06-18 19:20:34 - model - INFO - Loading existing FAISS index
+2025-06-18 19:20:34 - model - INFO - FAISS vector store loaded
+2025-06-18 19:20:34 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:20:34 - model - INFO - Initializing LangChain utilities
+2025-06-18 19:20:35 - model - INFO - Configuring API clients
+2025-06-18 19:20:35 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 19:20:35 - model - INFO - Embedding function initialized
+2025-06-18 19:20:35 - model - INFO - Loading existing FAISS index
+2025-06-18 19:20:35 - model - INFO - FAISS vector store loaded
+2025-06-18 19:20:35 - model - WARNING - FinGPT utilities not available: No module named 'fingpt_rag_wrapper'
+2025-06-18 19:20:35 - model - INFO - Initializing LangChain utilities

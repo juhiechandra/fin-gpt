@@ -130,3 +130,53 @@
 2025-06-18 16:28:57 - api - INFO - Temporary file saved: temp_Kubernetes-for-Beginners.pdf
 2025-06-18 16:28:57 - api - INFO - Document record inserted with ID: 47
 2025-06-18 16:28:57 - api - INFO - File saved to permanent storage: ./uploaded_files/doc-47-Kubernetes-for-Beginners.pdf
+2025-06-18 19:14:58 - api - INFO - Request 6c527116-bdf3-429e-bfe1-ac1c4232e3b1 started: POST /login
+2025-06-18 19:14:58 - api - INFO - Request 6c527116-bdf3-429e-bfe1-ac1c4232e3b1 completed: Status 200 in 0.00s
+2025-06-18 19:15:02 - api - INFO - Request 371c12cb-51ce-493c-9e42-4e80d0f8e1ac started: POST /chat
+2025-06-18 19:15:02 - api - INFO - Starting operation: chat_endpoint:hi
+2025-06-18 19:15:02 - api - INFO - Received chat query: hi...
+2025-06-18 19:15:02 - api - INFO - Getting chat history for session: session_1750254298302
+2025-06-18 19:15:02 - api - INFO - Retrieved 0 chat history items
+2025-06-18 19:15:02 - api - INFO - Processing query with model: gemini-2.0-flash
+2025-06-18 19:15:04 - api - INFO - Query processed in 2.44 seconds
+2025-06-18 19:15:04 - api - INFO - Generated answer: Hello! How can I help you today?...
+2025-06-18 19:15:04 - api - INFO - Logging chat to database for session: session_1750254298302
+2025-06-18 19:15:04 - api - INFO - Operation chat_endpoint:hi completed in 2.46 seconds
+2025-06-18 19:15:04 - api - INFO - Request 371c12cb-51ce-493c-9e42-4e80d0f8e1ac completed: Status 200 in 2.46s
+2025-06-18 19:16:35 - api - INFO - Request e970abfc-6c2d-482a-b762-649f6bc58638 started: POST /login
+2025-06-18 19:16:35 - api - INFO - Request e970abfc-6c2d-482a-b762-649f6bc58638 completed: Status 200 in 0.00s
+2025-06-18 19:16:41 - api - INFO - Request 9c95921b-43bb-4220-90bc-f664246f3811 started: POST /chat
+2025-06-18 19:16:41 - api - INFO - Starting operation: chat_endpoint:hi
+2025-06-18 19:16:41 - api - INFO - Received chat query: hi...
+2025-06-18 19:16:41 - api - INFO - Getting chat history for session: session_1750254395686
+2025-06-18 19:16:41 - api - INFO - Retrieved 0 chat history items
+2025-06-18 19:16:41 - api - INFO - Processing query with model: ollama-finance-chat
+2025-06-18 19:16:48 - api - INFO - Query processed in 7.52 seconds
+2025-06-18 19:16:48 - api - INFO - Generated answer: 
+I'm here to assist you. Is there anything specific you would like me to help you with?...
+2025-06-18 19:16:48 - api - INFO - Logging chat to database for session: session_1750254395686
+2025-06-18 19:16:48 - api - INFO - Operation chat_endpoint:hi completed in 7.65 seconds
+2025-06-18 19:16:48 - api - INFO - Request 9c95921b-43bb-4220-90bc-f664246f3811 completed: Status 200 in 7.69s
+2025-06-18 19:16:56 - api - INFO - Request efe7e380-2464-4be0-9724-4c09f72bf001 started: POST /chat
+2025-06-18 19:16:56 - api - INFO - Starting operation: chat_endpoint:explain me wipro stocks
+2025-06-18 19:16:56 - api - INFO - Received chat query: explain me wipro stocks...
+2025-06-18 19:16:56 - api - INFO - Getting chat history for session: session_1750254395686
+2025-06-18 19:16:56 - api - INFO - Retrieved 1 chat history items
+2025-06-18 19:16:56 - api - INFO - Processing query with model: ollama-finance-chat
+2025-06-18 19:17:16 - api - INFO - Query processed in 19.96 seconds
+2025-06-18 19:17:16 - api - INFO - Generated answer: Wipro Limited is an Indian multinational corporation that provides information technology, consultin...
+2025-06-18 19:17:16 - api - INFO - Logging chat to database for session: session_1750254395686
+2025-06-18 19:17:16 - api - INFO - Operation chat_endpoint:explain me wipro stocks completed in 20.38 seconds
+2025-06-18 19:17:16 - api - INFO - Request efe7e380-2464-4be0-9724-4c09f72bf001 completed: Status 200 in 20.44s
+2025-06-18 19:19:09 - api - INFO - Request 1b263283-c08c-4825-8712-e765bc85aabc started: POST /chat
+2025-06-18 19:19:09 - api - INFO - Starting operation: chat_endpoint:what happens during an IPO?
+2025-06-18 19:19:09 - api - INFO - Received chat query: what happens during an IPO?...
+2025-06-18 19:19:09 - api - INFO - Getting chat history for session: session_1750254395686
+2025-06-18 19:19:09 - api - INFO - Retrieved 2 chat history items
+2025-06-18 19:19:09 - api - INFO - Processing query with model: ollama-finance-chat
+2025-06-18 19:19:40 - api - INFO - Query processed in 30.80 seconds
+2025-06-18 19:19:40 - api - INFO - Generated answer: 
+1. Initial Public Offering (IPO): The company starts by filing documents with the Securities and Ex...
+2025-06-18 19:19:40 - api - INFO - Logging chat to database for session: session_1750254395686
+2025-06-18 19:19:40 - api - INFO - Operation chat_endpoint:what happens during an IPO? completed in 30.86 seconds
+2025-06-18 19:19:40 - api - INFO - Request 1b263283-c08c-4825-8712-e765bc85aabc completed: Status 200 in 30.89s
