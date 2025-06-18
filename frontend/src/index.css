@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* Default scrollbar styling */
+
+html,
+body {
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #f8f9fa;
+    height: 100%;
+    overflow: hidden;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    width: 8px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+    background-color: #007bff;
+    border-radius: 4px;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #ffffff;
+    color: #212529;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+#root {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Modern scrollbar style for scrollable components */
+
+.modern-scrollbar {
+    scrollbar-width: thin !important;
+    scrollbar-color: #007bff #f8f9fa !important;
+    overflow-y: auto !important;
+}
+
+.modern-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    display: block !important;
+}
+
+.modern-scrollbar::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+.modern-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #007bff;
+    border-radius: 4px;
+    border: 1px solid #f8f9fa;
+}
+
+.modern-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #0056b3;
+}
