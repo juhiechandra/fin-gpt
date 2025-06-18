@@ -10,6 +10,9 @@ class ModelName(str, Enum):
     GEMINI_2_0_FLASH = "gemini-2.0-flash"
     GEMINI_2_0_PRO = "gemini-2.0-pro"
 
+    # FinGPT models
+    FINGPT_FORECASTER = "fingpt-forecaster"
+
     # No OpenAI models - removed
 
 
@@ -20,17 +23,25 @@ class QueryInput(BaseModel):
     # Whether to use hybrid search (vector + BM25) or just vector search
     use_hybrid_search: bool = True
 
-    # Validator to ensure model is a valid Gemini model
-    @field_validator('model')
+    # Validator to ensure model is supported
+    @field_validator("model")
     @classmethod
     def validate_model(cls, v):
-        # If not a Gemini model, default to gemini-2.0-flash
-        if not v.startswith("gemini"):
-            return "gemini-2.0-flash"
-        # If it's already a valid Gemini model, return as is
-        if v in [m.value for m in ModelName]:
+        # Support both Gemini and FinGPT models
+        supported_models = [m.value for m in ModelName]
+
+        if v in supported_models:
             return v
-        # If it's a Gemini model but not in our enum, default to gemini-2.0-flash
+
+        # If it's a Gemini model but not in our enum, allow it
+        if v.startswith("gemini"):
+            return v
+
+        # If it's FinGPT model, allow it
+        if v.startswith("fingpt"):
+            return v
+
+        # Default to gemini-2.0-flash for unsupported models
         return "gemini-2.0-flash"
 
     model_config = {
@@ -40,7 +51,7 @@ class QueryInput(BaseModel):
                     "session_id": "some-uuid-here",
                     "question": "What is RAG?",
                     "model": "gemini-2.0-flash",
-                    "use_hybrid_search": True
+                    "use_hybrid_search": True,
                 }
             ]
         }
@@ -58,7 +69,7 @@ class QueryResponse(BaseModel):
                 {
                     "answer": "RAG stands for Retrieval Augmented Generation...",
                     "processing_time": 1.25,
-                    "model": "gemini-2.0-flash"
+                    "model": "gemini-2.0-flash",
                 }
             ]
         }
@@ -76,6 +87,7 @@ class DeleteFileRequest(BaseModel):
 
 
 # New models for document breakdown
+
 
 class ComponentInfo(BaseModel):
     name: str

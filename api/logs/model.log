@@ -895,3 +895,42 @@
 2025-06-18 16:31:36 - model - INFO - Loading existing FAISS index
 2025-06-18 16:31:36 - model - INFO - FAISS vector store loaded
 2025-06-18 16:31:36 - model - INFO - Initializing LangChain utilities
+2025-06-18 16:39:29 - model - INFO - Configuring API clients
+2025-06-18 16:39:29 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 16:39:29 - model - INFO - Embedding function initialized
+2025-06-18 16:39:29 - model - INFO - Loading existing FAISS index
+2025-06-18 16:39:29 - model - INFO - FAISS vector store loaded
+2025-06-18 16:39:29 - model - INFO - Initializing LangChain utilities
+2025-06-18 16:39:43 - model - INFO - Configuring API clients
+2025-06-18 16:39:43 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 16:39:43 - model - INFO - Embedding function initialized
+2025-06-18 16:39:43 - model - INFO - Loading existing FAISS index
+2025-06-18 16:39:43 - model - INFO - FAISS vector store loaded
+2025-06-18 16:39:43 - model - INFO - Initializing LangChain utilities
+2025-06-18 16:39:52 - model - INFO - Configuring API clients
+2025-06-18 16:39:52 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 16:39:52 - model - INFO - Embedding function initialized
+2025-06-18 16:39:52 - model - INFO - Loading existing FAISS index
+2025-06-18 16:39:52 - model - INFO - FAISS vector store loaded
+2025-06-18 16:39:52 - model - INFO - Initializing LangChain utilities
+2025-06-18 16:40:03 - model - INFO - Configuring API clients
+2025-06-18 16:40:03 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 16:40:03 - model - INFO - Embedding function initialized
+2025-06-18 16:40:03 - model - INFO - Loading existing FAISS index
+2025-06-18 16:40:03 - model - INFO - FAISS vector store loaded
+2025-06-18 16:40:03 - model - WARNING - FinGPT utilities not available: No module named 'torch'
+2025-06-18 16:40:03 - model - INFO - Initializing LangChain utilities
+2025-06-18 16:40:09 - model - INFO - Configuring API clients
+2025-06-18 16:40:09 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 16:40:09 - model - INFO - Embedding function initialized
+2025-06-18 16:40:09 - model - INFO - Loading existing FAISS index
+2025-06-18 16:40:09 - model - INFO - FAISS vector store loaded
+2025-06-18 16:40:09 - model - WARNING - FinGPT utilities not available: No module named 'torch'
+2025-06-18 16:40:09 - model - INFO - Initializing LangChain utilities
+2025-06-18 16:40:31 - model - INFO - Configuring API clients
+2025-06-18 16:40:31 - model - INFO - FAISS DB path: ./faiss_db
+2025-06-18 16:40:31 - model - INFO - Embedding function initialized
+2025-06-18 16:40:31 - model - INFO - Loading existing FAISS index
+2025-06-18 16:40:31 - model - INFO - FAISS vector store loaded
+2025-06-18 16:40:31 - model - WARNING - FinGPT utilities not available: No module named 'torch'
+2025-06-18 16:40:31 - model - INFO - Initializing LangChain utilities

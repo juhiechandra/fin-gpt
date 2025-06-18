@@ -10,6 +10,15 @@ from logger import model_logger, error_logger, PerformanceTimer
 import os
 import time
 
+# Import FinGPT utilities
+try:
+    from fingpt_rag_wrapper import get_fingpt_rag_chain
+
+    fingpt_available = True
+except ImportError as e:
+    model_logger.warning(f"FinGPT utilities not available: {e}")
+    fingpt_available = False
+
 load_dotenv()
 
 model_logger.info("Initializing LangChain utilities")
@@ -26,6 +35,16 @@ def get_rag_chain(model="gemini-2.0-flash", use_hybrid_search=True):
     Returns:
         A LangChain retrieval chain.
     """
+
+    # Check if FinGPT model is requested
+    if model.startswith("fingpt"):
+        model_logger.info(f"FinGPT model requested: {model}")
+        if not fingpt_available:
+            model_logger.error("FinGPT utilities not available, falling back to Gemini")
+            model = "gemini-2.0-flash"
+        else:
+            return get_fingpt_rag_chain(use_hybrid_search=use_hybrid_search)
+
     with PerformanceTimer(model_logger, f"get_rag_chain:{model}"):
         try:
             # Configure retriever
@@ -40,7 +59,7 @@ def get_rag_chain(model="gemini-2.0-flash", use_hybrid_search=True):
                     weight_vector=0.6,
                     weight_keyword=0.4,
                     use_rrf=True,
-                    rrf_k=60
+                    rrf_k=60,
                 )
                 model_logger.info("Hybrid retriever configured")
             else:
@@ -48,20 +67,16 @@ def get_rag_chain(model="gemini-2.0-flash", use_hybrid_search=True):
                 model_logger.info("Using vector search only")
                 retriever = vectorstore.as_retriever(
                     search_type="mmr",
-                    search_kwargs={
-                        "k": 6,
-                        "fetch_k": 20,
-                        "lambda_mult": 0.75
-                    }
+                    search_kwargs={"k": 6, "fetch_k": 20, "lambda_mult": 0.75},
                 )
-                model_logger.info(
-                    "Vector retriever configured with MMR search")
+                model_logger.info("Vector retriever configured with MMR search")
 
-            # Initialize LLM - ONLY USE GEMINI MODELS
+            # Initialize LLM - ONLY USE GEMINI MODELS for this path
             # Force model to be a Gemini model
             if not model.startswith("gemini"):
                 model_logger.warning(
-                    f"Non-Gemini model requested: {model}, forcing to gemini-2.0-flash")
+                    f"Non-Gemini model requested: {model}, forcing to gemini-2.0-flash"
+                )
                 model = "gemini-2.0-flash"
 
             model_logger.info(f"Using Gemini model: {model}")
@@ -70,47 +85,53 @@ def get_rag_chain(model="gemini-2.0-flash", use_hybrid_search=True):
                 google_api_key=os.getenv("GEMINI_API_KEY"),
                 temperature=0.7,
                 top_k=40,
-                max_output_tokens=2048
+                max_output_tokens=2048,
             )
 
             # Contextualization prompt
             model_logger.info("Creating contextualization prompt")
-            contextualize_prompt = ChatPromptTemplate.from_messages([
-                ("system", """Given chat history and a question, reformulate it to be standalone."""),
-                MessagesPlaceholder("chat_history"),
-                ("human", "{input}")
-            ])
+            contextualize_prompt = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        """Given chat history and a question, reformulate it to be standalone.""",
+                    ),
+                    MessagesPlaceholder("chat_history"),
+                    ("human", "{input}"),
+                ]
+            )
 
             model_logger.info("Creating history-aware retriever")
             history_aware_retriever = create_history_aware_retriever(
-                llm,
-                retriever,
-                contextualize_prompt
+                llm, retriever, contextualize_prompt
             )
 
             # QA prompt - simplified for basic RAG
             model_logger.info("Creating QA prompt")
-            qa_prompt = ChatPromptTemplate.from_messages([
-                ("system", """You are a helpful assistant that answers questions based on the provided context from documents.
+            qa_prompt = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        """You are a helpful assistant that answers questions based on the provided context from documents.
                 Answer the user's questions based on the information provided in the context. 
-                If the information is not in the context, say so politely."""),
-                MessagesPlaceholder("chat_history"),
-                ("human", "{input}"),
-                ("human", "Context from documents:\n{context}")
-            ])
+                If the information is not in the context, say so politely.""",
+                    ),
+                    MessagesPlaceholder("chat_history"),
+                    ("human", "{input}"),
+                    ("human", "Context from documents:\n{context}"),
+                ]
+            )
 
             # Assemble full chain
             model_logger.info("Creating question-answer chain")
-            question_answer_chain = create_stuff_documents_chain(
-                llm, qa_prompt)
+            question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 
             model_logger.info("Creating retrieval chain")
             retrieval_chain = create_retrieval_chain(
                 history_aware_retriever, question_answer_chain
             )
 
-            model_logger.info(
-                f"RAG chain created successfully for model: {model}")
+            model_logger.info(f"RAG chain created successfully for model: {model}")
             return retrieval_chain
 
         except Exception as e:
